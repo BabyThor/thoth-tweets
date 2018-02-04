@@ -216,7 +216,8 @@
               return;
             }
             var contentString = '<h1>' + place.name + '</h1>';
-            var url = '/api/?location=' + place.name + '&lat=' + place.geometry.location.lat() + '&lng=' + place.geometry.location.lng()
+            var distance = document.getElementById('distance').value;
+            var url = '/api/?location=' + place.name + '&lat=' + place.geometry.location.lat() + '&lng=' + place.geometry.location.lng() + '&distance=' + distance
             $.getJSON( url, function( data ) {
               data.forEach(function(tweet) {
                 contentString += '<p>' + tweet + '</p>';
