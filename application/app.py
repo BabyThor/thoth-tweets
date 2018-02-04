@@ -67,7 +67,7 @@ class Helper(object):
         url = 'https://api.twitter.com/1.1/search/tweets.json?q=%s&geocode=%s,%s,%s' % (
             location_data['name'], location_data['lat'], location_data['lng'], distance
         )
-        results = oauth_req(url, settings.TOKEN_KEY, settings.TOKEN_SECRET)
+        results = self.oauth_req(url, settings.TOKEN_KEY, settings.TOKEN_SECRET)
         tweets_data = []
         for tweet in results['statuses']:
             if not tweet.has_key('retweeted_status'):
