@@ -1,0 +1,14 @@
+FROM python:2.7.14-jessie
+
+RUN pip install pymongo==3.6.0 \
+    requests==2.18.4 \
+    oauth2==1.9.0.post1 \ 
+    Flask==0.12.2 \
+    pycodestyle==2.3.1
+
+ENV APPLICATION_ROOT /app/
+
+RUN mkdir $APPLICATION_ROOT
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+WORKDIR $APPLICATION_ROOT

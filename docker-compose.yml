@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo:3.0-wheezy
+
+  app:
+    image: thoth-tweets:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile_app
+    volumes:
+      - ./application:/app
+    ports:
+      - 5000:5000
+    depends_on:
+      - mongodb
+    entrypoint: /entrypoint.sh
+    labels:
+      description: "thoth-tweets"
