@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Places Searchbox</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #description {
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+      }
+
+      #infowindow-content .title {
+        font-weight: bold;
+      }
+
+      #infowindow-content {
+        display: none;
+      }
+
+      #map #infowindow-content {
+        display: inline;
+      }
+
+      .pac-card {
+        margin: 10px 10px 0 0;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        background-color: #fff;
+        font-family: Roboto;
+      }
+
+      #pac-container {
+        padding-bottom: 12px;
+        margin-right: 12px;
+      }
+
+      .pac-controls {
+        display: inline-block;
+        padding: 5px 11px;
+      }
+
+      .pac-controls label {
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+      }
+
+      #distance {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        margin-top: 10px;
+        text-overflow: ellipsis;
+      }
+
+      #location {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        margin-top: 10px;
+        text-overflow: ellipsis;
+      }
+
+      /* Smartphones (portrait and landscape) ----------- */
+      @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+        #location {
+          width: 50%
+        }
+        #distance {
+          margin-top: 40px;
+          left: 126px !important;
+          width: 50%;
+        }
+      }
+
+      /* Smartphones (landscape) ----------- */
+      @media only screen and (min-width : 321px) {
+        #location {
+          width: 40%
+        }
+        #distance {
+          width: 40%;
+        }
+      }
+
+      /* Smartphones (portrait) ----------- */
+      @media only screen and (max-width : 320px) {
+        #location {
+          width: 30%
+        }
+        #distance {
+          width: 30%;
+        }
+      }
+
+      /* iPads (portrait and landscape) ----------- */
+      @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+        #location {
+          width: 60%
+        }
+        #distance {
+          width: 6%;
+        }
+      }
+      @media only screen and (min-device-width : 1024px) {
+        #location {
+          width: 60%
+        }
+        #distance {
+          width: 15%;
+        }
+      }
+
+      #location:focus {
+        border-color: #4d90fe;
+      }
+
+      #title {
+        color: #fff;
+        background-color: #4d90fe;
+        font-size: 25px;
+        font-weight: 500;
+        padding: 6px 12px;
+      }
+      #target {
+        width: 345px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="form">
+      <input id="location" class="controls" type="text" placeholder="Search Box">
+      <input id="distance" class="controls" type="text" placeholder="70 km">
+    </div>
+    <div id="map"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+      var myPosition = {
+        lat: 13.7841533,
+        lng: 100.5742639
+      };
+      var map, marker;
+      function setMyPosition(currentCoordinate) {
+        myPosition = {
+          lat: currentCoordinate.coords.latitude,
+          lng: currentCoordinate.coords.longitude
+        };
+        marker.setPosition(myPosition);
+        map.panTo(myPosition);
+        console.log('location')
+      }
+
+      function initAutocomplete() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: myPosition,
+          zoom: 13
+        });
+
+        marker = new google.maps.Marker({
+          position: myPosition,
+          map: map,
+        });
+
+        var infowindow = new google.maps.InfoWindow({
+          content: 'Current Location'
+        });
+
+        marker.addListener('click', function() {
+          infowindow.open(map, marker);
+        });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(setMyPosition);
+        }
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('location');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+        var distance = document.getElementById('distance');
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(distance);
+        
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            var contentString = '<h1>' + place.name + '</h1>';
+            var url = '/api/?location=' + place.name + '&lat=' + place.geometry.location.lat() + '&lng=' + place.geometry.location.lng()
+            $.getJSON( url, function( data ) {
+              data.forEach(function(tweet) {
+                contentString += '<p>' + tweet + '</p>';
+              });
+              infowindow.setContent(contentString);
+            });
+            marker.setPosition(place.geometry.location);
+            map.panTo(place.geometry.location);
+            return;
+          });
+        });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&callback=initAutocomplete"
+         async defer></script>
+  </body>
+</html>
